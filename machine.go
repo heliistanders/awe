@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -26,6 +27,25 @@ type Machine struct {
 	InternalPorts []string `json:"-"`
 	Image         string   `json:"image"`
 	//mu sync.Mutex `json:"-"`
+}
+
+func checkDockerInstallation() error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = cli.Close()
+		fmt.Println(err)
+	}()
+
+	_, err = cli.Info(ctx)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 

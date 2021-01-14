@@ -6,6 +6,7 @@ AWE is designed to run in a Linux VM. AWE runs a go application which controls t
 
 # Requirements
 - docker
+- a user which can access docker  
 - golang (for development)
 
 # Installation & 
@@ -42,7 +43,7 @@ MIT - see [LICENSE](./LICENSE) for further information
 
 ## ToDo
 
-- [ ] Startup - Check docker, database ...
+- [x] Startup - Check docker, database ...
 - [ ] Serve static content
 - [ ] Rework machine handling (restart, helper functions)
 - [ ] Implement better logging  

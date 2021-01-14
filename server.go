@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 )
@@ -28,6 +29,8 @@ func errorLogger(errors <-chan error) {
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile)
+	startupChecks()
 
 	// not a TRNG but good enough
 	rand.Seed(time.Now().UnixNano())
@@ -84,9 +87,7 @@ func main() {
 
 	}))
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
-	})
+	app.Static("/", "./public")
 
 	app.Get("/machines", func(c *fiber.Ctx) error {
 		// return c.JSON(fiber.Map{
@@ -215,6 +216,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func checkWebPages() error {
+	if _, err := os.Stat("./public"); os.IsNotExist(err) {
+		log.Println("public folder not found. \n creating public folder ...")
+		err := os.Mkdir("public", 0775)
+		if err != nil {
+			log.Println("Cannot create public folder")
+			return err
+		}
+	}
+	if _, err := os.Stat("./public/index.html"); os.IsNotExist(err) {
+		log.Println("index.html not found")
+		return err
+	}
+
+	return nil
 }
 
 func generateFlag(n int) string {
