@@ -13,6 +13,18 @@ type TempFlagStore struct {
 }
 
 func NewTempFlagStore(db *sql.DB) *TempFlagStore {
+	createStmt := `CREATE TABLE IF NOT EXISTS "flags" (
+					"id" integer,
+					"image" text NOT NULL UNIQUE ,
+					"flag" text NOT NULL UNIQUE , 
+					PRIMARY KEY (id)
+	)`
+
+	_, err := db.Exec(createStmt)
+	if err != nil {
+		log.Println(err)
+	}
+
 	return &TempFlagStore{
 		db: db,
 	}

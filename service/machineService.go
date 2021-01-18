@@ -50,6 +50,8 @@ func (ms *MachineService) GetAllMachines() ([]model.Machine, error) {
 				machine.Difficulty = value
 			case "ports":
 				machine.InternalPorts = strings.Split(value, ",")
+			case "hint":
+				machine.Hint = value
 			}
 		}
 		machine.Status = "not running"
@@ -182,6 +184,14 @@ func (ms *MachineService) ResetMachine(name string, flag string) error {
 	if err := ms.StartMachineWithFlag(name, flag); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (ms *MachineService) AddMachine(path string) error {
+	if err := ms.awe.AddMachine(path); err != nil {
+		return err
+	}
+
 	return nil
 }
 

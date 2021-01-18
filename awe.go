@@ -15,7 +15,7 @@ func main () {
 	// initialize rng
 	rand.Seed(time.Now().UnixNano())
 	// initialize logger -> show line number
-	log.SetFlags(log.Lshortfile)
+	log.SetFlags(log.Lshortfile | log.Ldate)
 
 	// check Website
 	if err := indexPageExists(); err != nil {
@@ -28,7 +28,13 @@ func main () {
 		log.Fatal(err)
 	}
 	defer cli.Close()
-	aweDocker := aweDocker.NewAweDocker(cli)
+	aweDockerInstance := aweDocker.NewAweDocker(cli)
+
+	// check if we can access docker
+	err = aweDockerInstance.IsAvailable()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// open Database
 	db, err := sql.Open("sqlite3", "awe.sqlite")
@@ -39,7 +45,7 @@ func main () {
 
 
 	// setup web server
-	app := webserver.NewServer(aweDocker, db)
+	app := webserver.NewServer(aweDockerInstance, db)
 
 	// start WebServer
 	err = app.Listen(":5000")

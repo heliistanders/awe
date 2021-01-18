@@ -12,6 +12,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 )
@@ -248,4 +249,21 @@ func (a *AweDocker) GetOpenPorts(container types.Container) ([]string, error) {
 	}
 
 	return ports, nil
+}
+
+func (a *AweDocker) AddMachine(path string) error {
+	log.Println("Adding image from path " + path)
+	imageFile, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer imageFile.Close()
+
+
+	_, err = a.cli.ImageLoad(ctx, imageFile, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

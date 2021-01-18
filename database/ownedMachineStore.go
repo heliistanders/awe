@@ -13,6 +13,17 @@ type OwnedMachineStore struct {
 }
 
 func NewOwnedMachineStore(db *sql.DB) *OwnedMachineStore {
+	createStmt := `CREATE TABLE IF NOT EXISTS "owned" (
+		"id" integer,
+		"image" varchar NOT NULL UNIQUE,
+		"owned_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (id)
+		)`
+
+	_, err := db.Exec(createStmt)
+	if err != nil {
+		log.Println(err)
+	}
 	return &OwnedMachineStore{
 		db: db,
 	}

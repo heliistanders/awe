@@ -4,6 +4,7 @@ import (
 	"awe/aweDocker"
 	"awe/service"
 	"database/sql"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"math/rand"
@@ -13,8 +14,9 @@ import (
 func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 	app := fiber.New(fiber.Config{
 		UnescapePath: true,
-		ReadTimeout: time.Second * 30,
-		WriteTimeout: time.Second * 30,
+		ReadTimeout: time.Second * 60,
+		WriteTimeout: time.Second * 60,
+		BodyLimit: 1024 * 1024 * 1024 * 2,
 	})
 
 	machineService := service.NewMachineService(awe, db)
@@ -93,6 +95,49 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 
 		return ctx.SendString("OK")
 
+	})
+
+	app.Post("add", func(ctx *fiber.Ctx) error {
+		form, err := ctx.MultipartForm()
+		if err != nil {
+			log.Println("Cannot get multipart form")
+			log.Println(err)
+			return ctx.SendStatus(400)
+		}
+
+		formFiles := form.File["machine"]
+		if len(formFiles) > 1 {
+			log.Println("More than one file")
+			log.Println(err)
+			return ctx.SendStatus(400)
+		}
+
+		passwords := form.Value["password"]
+		if len(passwords) > 1 {
+			log.Println("More than one password")
+			log.Println(err)
+			return ctx.SendStatus(400)
+		}
+		if passwords[0] != "123" {
+			log.Println("Wrong password")
+			log.Println(err)
+			return ctx.SendStatus(400)
+		}
+
+		formFile := formFiles[0]
+
+		filePath := fmt.Sprintf("/tmp/%s.tar", "test")
+
+		err = ctx.SaveFile(formFile, filePath)
+		if err != nil {
+			log.Println(err)
+			ctx.SendStatus(500)
+		}
+		if err := machineService.AddMachine(filePath); err != nil {
+			return ctx.SendStatus(500)
+		}
+
+		return ctx.SendString("OK")
 	})
 
 
