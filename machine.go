@@ -79,10 +79,10 @@ func (m *Machine) Validate() bool {
 	return validated
 }
 
-// context for every docker cli
+// context for every aweDocker cli
 var ctx = context.Background()
 
-func getAllMachines() []Machine {
+func GetAllMachines() []Machine {
 	images := getAllImages()
 	owns := GetOwnedMachines()
 	var machines []Machine
@@ -120,7 +120,7 @@ func getAllMachines() []Machine {
 }
 
 func getMachineByImage(image string) Machine {
-	machines := getAllMachines()
+	machines := GetAllMachines()
 	var machine Machine
 	for _,m := range machines {
 		if m.Image == image {
@@ -210,7 +210,7 @@ func getAllContainers() []types.Container {
 	if err != nil {
 		panic(err)
 	}
-
+	// WTF?
 	for _, c := range containers {
 		_, err := getImageByName(c.Image)
 		if err != nil {

@@ -28,7 +28,7 @@ func errorLogger(errors <-chan error) {
 	}
 }
 
-func main() {
+func Fakemain() {
 	log.SetFlags(log.Lshortfile)
 	startupChecks()
 
@@ -94,7 +94,7 @@ func main() {
 		// 	"ok":       true,
 		// 	"machines": machines,
 		// })
-		return c.JSON(getAllMachines())
+		return c.JSON(GetAllMachines())
 	})
 
 	app.Get("/machine/:name", func(c *fiber.Ctx) error {
@@ -125,7 +125,7 @@ func main() {
 		machine := getMachineByImage(decodedName)
 		if machine.Status == "running" {
 			fmt.Println("machine already running")
-			return c.JSON(getAllMachines())
+			return c.JSON(GetAllMachines())
 		}
 		success, err := machine.StartMachine(flag)
 		if err != nil {
@@ -135,7 +135,7 @@ func main() {
 		if success {
 			createFlag(machine, flag)
 		}
-		return c.JSON(getAllMachines())
+		return c.JSON(GetAllMachines())
 	})
 
 	app.Get("/stop/:name", func(c *fiber.Ctx) error {
@@ -151,7 +151,7 @@ func main() {
 		removeContainer(decodedName)
 		deleteFlag(machine)
 
-		return c.JSON(getAllMachines())
+		return c.JSON(GetAllMachines())
 	})
 
 	app.Get("/restart/:name", func(c *fiber.Ctx) error {
@@ -170,16 +170,16 @@ func main() {
 		fmt.Println("Flag: " + flag)
 		success, err := machine.stopMachine()
 		if err != nil || !success {
-			return c.JSON(getAllMachines())
+			return c.JSON(GetAllMachines())
 		}
 
 		success, err = machine.StartMachine(flag)
 		if err != nil || !success {
-			return c.JSON(getAllMachines())
+			return c.JSON(GetAllMachines())
 		}
 		createFlag(machine, flag)
 
-		return c.JSON(getAllMachines())
+		return c.JSON(GetAllMachines())
 	})
 
 	type solveMsg struct {

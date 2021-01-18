@@ -33,8 +33,8 @@ The ports label contains one port or a comma-separated list of ports. Those port
 
 ### Example Build command when using a DockerFile
 ```bash
- docker build -t hackme01 --label awe="Hackme 01" --label difficulty=easy --label ports=80 .
- docker build -t hackme02 --label awe="Hackme 02" --label difficulty=easy --label ports=80,8080 .
+ aweDocker build -t hackme01 --label awe="Hackme 01" --label difficulty=easy --label ports=80 .
+ aweDocker build -t hackme02 --label awe="Hackme 02" --label difficulty=easy --label ports=80,8080 .
  ```
 
 ## License
@@ -44,10 +44,10 @@ MIT - see [LICENSE](./LICENSE) for further information
 ## ToDo
 
 - [x] Startup - Check docker, database ...
-- [ ] Serve static content
+- [x] Serve static content
 - [ ] Rework machine handling (restart, helper functions)
 - [ ] Implement better logging  
 - [ ] Web terminal via WebSocket into solved machines
 - [ ] Refactor Codebase (especially the database handling)
-- [ ] Add Frontend as submodule  
+- [ ] Add Frontend as git submodule  
 - [ ] Additional flags for hints?
