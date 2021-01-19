@@ -29,7 +29,6 @@ func NewAweDocker(cli *client.Client) *AweDocker {
 
 var ctx = context.Background()
 
-
 func (a *AweDocker) IsAvailable() error {
 	_, err := a.cli.Info(ctx)
 	if err != nil {
@@ -44,6 +43,18 @@ func (a *AweDocker) StartMachine(machine *model.Machine) error {
 }
 
 func (a *AweDocker) StartMachineWithFlag(machine *model.Machine, flag string) error {
+	// if theres already a container running with this image => skip
+	containers, err := a.GetAllAweContainers()
+	if err != nil {
+		return err
+	}
+
+	for _, cont := range containers {
+		if cont.Image == machine.Image {
+			return errors.New("machine is already running")
+		}
+	}
+
 	// create mapping for ever exposed port of the machine
 	exposedPorts := make(map[nat.Port]struct{})
 	portBindings := make(map[nat.Port][]nat.PortBinding)
@@ -60,7 +71,7 @@ func (a *AweDocker) StartMachineWithFlag(machine *model.Machine, flag string) er
 		// portBindings
 		portBindings[p] = []nat.PortBinding{
 			{
-				HostIP: "0.0.0.0",
+				HostIP:   "0.0.0.0",
 				HostPort: strconv.Itoa(rand.Intn(64512) + 1024), // port >1024 && < 65 536
 			},
 		}
@@ -113,7 +124,6 @@ func (a *AweDocker) StartMachineWithFlag(machine *model.Machine, flag string) er
 		}
 		defer hi.Close()
 	}
-
 
 	return nil
 }
@@ -234,7 +244,6 @@ func (a *AweDocker) GetAllAweContainers() ([]types.Container, error) {
 func (a *AweDocker) GetOpenPorts(container types.Container) ([]string, error) {
 	var ports []string
 
-
 	con, err := a.cli.ContainerInspect(ctx, container.ID)
 	if err != nil {
 		return ports, err
@@ -258,7 +267,6 @@ func (a *AweDocker) AddMachine(path string) error {
 		return err
 	}
 	defer imageFile.Close()
-
 
 	_, err = a.cli.ImageLoad(ctx, imageFile, false)
 	if err != nil {

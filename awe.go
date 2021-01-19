@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func main () {
+func main() {
 	// initialize rng
 	rand.Seed(time.Now().UnixNano())
 	// initialize logger -> show line number
@@ -43,7 +43,6 @@ func main () {
 	}
 	defer db.Close()
 
-
 	// setup web server
 	app := webserver.NewServer(aweDockerInstance, db)
 
@@ -70,4 +69,3 @@ func indexPageExists() error {
 
 	return nil
 }
-

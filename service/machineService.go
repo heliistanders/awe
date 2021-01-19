@@ -11,16 +11,16 @@ import (
 )
 
 type MachineService struct {
-	awe *aweDocker.AweDocker
+	awe          *aweDocker.AweDocker
 	machineStore *database.OwnedMachineStore
-	flagStore *database.TempFlagStore
+	flagStore    *database.TempFlagStore
 }
 
 func NewMachineService(awe *aweDocker.AweDocker, db *sql.DB) *MachineService {
 	return &MachineService{
 		machineStore: database.NewOwnedMachineStore(db),
-		flagStore: database.NewTempFlagStore(db),
-		awe: awe,
+		flagStore:    database.NewTempFlagStore(db),
+		awe:          awe,
 	}
 }
 
@@ -31,14 +31,13 @@ func (ms *MachineService) GetAllMachines() ([]model.Machine, error) {
 
 	allOwns, err := ms.machineStore.GetAll()
 	if err != nil {
-		return machines,err
+		return machines, err
 	}
 
 	allContainers, err := ms.awe.GetAllAweContainers()
 	if err != nil {
 		return machines, err
 	}
-
 
 	for _, image := range allImages {
 		var machine model.Machine
@@ -69,8 +68,8 @@ func (ms *MachineService) GetAllMachines() ([]model.Machine, error) {
 			if v.Image == machine.Image {
 				log.Println("Container Status: " + v.Status)
 				switch v.Status {
-					case "":
-						machine.Status = "not running"
+				case "":
+					machine.Status = "not running"
 				default:
 					machine.Status = "not running"
 				}
@@ -124,7 +123,7 @@ func (ms *MachineService) StartMachineWithFlag(name string, flag string) error {
 
 	tempFlag := model.TempFlag{
 		Image: machine.Image,
-		Flag: flag,
+		Flag:  flag,
 	}
 	if _, err := ms.flagStore.Insert(&tempFlag); err != nil {
 		return err
@@ -195,4 +194,27 @@ func (ms *MachineService) AddMachine(path string) error {
 	return nil
 }
 
+func (ms *MachineService) Solve(flag string) error {
+	tempFlag, err := ms.flagStore.FindTempFlagByFlag(flag)
+	if err != nil {
+		log.Printf("cannot find tempFlag: %s", err)
+	}
+	if tempFlag.Image == "" {
+		return errors.New("wrong flag")
+	}
+	machine, err := ms.getMachineByName(tempFlag.Image)
+	if err != nil {
+		return err
+	}
 
+	ownedMachine, err := ms.machineStore.Insert(&machine)
+	if err != nil {
+		return err
+	}
+
+	if ownedMachine.OwnedAt == "" {
+		return errors.New("this should not happen ...")
+	}
+
+	return nil
+}

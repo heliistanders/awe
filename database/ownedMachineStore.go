@@ -22,7 +22,7 @@ func NewOwnedMachineStore(db *sql.DB) *OwnedMachineStore {
 
 	_, err := db.Exec(createStmt)
 	if err != nil {
-		log.Println(err)
+		log.Printf("cannot create table owend: %s", err)
 	}
 	return &OwnedMachineStore{
 		db: db,
@@ -31,21 +31,21 @@ func NewOwnedMachineStore(db *sql.DB) *OwnedMachineStore {
 
 func (s *OwnedMachineStore) Insert(machine *model.Machine) (*model.OwnedMachine, error) {
 	ownedMachine := model.OwnedMachine{
-		Image: machine.Image,
+		Image:   machine.Image,
 		OwnedAt: time.Now().String(),
 	}
 	if machine.Image == "" {
-		return &ownedMachine, errors.New("Machine Image is empty")
+		return &ownedMachine, errors.New("machine image is empty")
 	}
 	result, err := s.db.Exec("INSERT INTO owned(image) VALUES(?)", machine.Image)
 	if err != nil {
-		log.Println("Cannot insert OwnedMachine: &s", err)
+		log.Printf("cannot insert OwnedMachine: %s", err)
 		return &ownedMachine, err
 	}
 
 	newId, err := result.LastInsertId()
 	if err != nil {
-		log.Println("Cannot get last id: %s", err)
+		log.Printf("cannot get last id: %s", err)
 		return &ownedMachine, err
 	}
 
@@ -54,7 +54,7 @@ func (s *OwnedMachineStore) Insert(machine *model.Machine) (*model.OwnedMachine,
 }
 
 func (s *OwnedMachineStore) GetAll() ([]model.OwnedMachine, error) {
-	all := []model.OwnedMachine{}
+	var all []model.OwnedMachine
 	rows, err := s.db.Query("SELECT id, image, owned_at FROM owned")
 	if err != nil {
 		log.Println("Cannot query all OwnedMachines: &s", err)
@@ -64,18 +64,18 @@ func (s *OwnedMachineStore) GetAll() ([]model.OwnedMachine, error) {
 
 	for rows.Next() {
 		var (
-			id int64
-			image string
+			id      int64
+			image   string
 			ownedAt string
 		)
 
 		if err := rows.Scan(&id, &image, &ownedAt); err != nil {
-			log.Println("Cannot scan rows: %s", err)
+			log.Printf("cannot scan rows: %s", err)
 			return all, err
 		}
 		ownedMachine := model.OwnedMachine{
-			ID: id,
-			Image: image,
+			ID:      id,
+			Image:   image,
 			OwnedAt: ownedAt,
 		}
 

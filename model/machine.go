@@ -14,7 +14,7 @@ type Machine struct {
 	Ports         []string `json:"ports"`
 	InternalPorts []string `json:"-"`
 	Image         string   `json:"image"`
-	Hint string `json:"hint"`
+	Hint          string   `json:"hint"`
 }
 
 func (m *Machine) Validate() bool {

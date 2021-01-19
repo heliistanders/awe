@@ -14,9 +14,10 @@ import (
 func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 	app := fiber.New(fiber.Config{
 		UnescapePath: true,
-		ReadTimeout: time.Second * 60,
+		ReadTimeout:  time.Second * 60,
 		WriteTimeout: time.Second * 60,
-		BodyLimit: 1024 * 1024 * 1024 * 2,
+		BodyLimit:    1024 * 1024 * 1024 * 2,
+		Concurrency: 1,
 	})
 
 	machineService := service.NewMachineService(awe, db)
@@ -82,16 +83,24 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 	})
 
 	app.Post("/solve", func(ctx *fiber.Ctx) error {
-		var flag string
-
 		// cannot parse Body => 400 BAD REQUEST
-		if err := ctx.BodyParser(flag); err != nil {
+		form, err := ctx.MultipartForm()
+		if err != nil {
+			log.Printf("cannot parse form %s", err)
 			return ctx.SendStatus(400)
 		}
 
-		// TODO: check Flag
+		flagFields := form.Value["flag"]
+		if len(flagFields) != 1 {
+			log.Println("not exactly one flag field")
+			return ctx.SendStatus(400)
+		}
 
-
+		flag := flagFields[0]
+		if err := machineService.Solve(flag); err != nil {
+			log.Printf("cannot solve: %s", err)
+			return ctx.SendStatus(500)
+		}
 
 		return ctx.SendString("OK")
 
@@ -139,8 +148,6 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 
 		return ctx.SendString("OK")
 	})
-
-
 
 	return app
 }
