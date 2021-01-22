@@ -47,14 +47,18 @@ func (ms *MachineService) GetAllMachines() ([]model.Machine, error) {
 				machine.Name = value
 			case "difficulty":
 				machine.Difficulty = value
-			case "ports":
-				machine.InternalPorts = strings.Split(value, ",")
 			case "hint":
 				machine.Hint = value
 			}
 		}
 		machine.Status = "not running"
 		machine.Image = strings.Split(image.RepoTags[0], ":")[0]
+		internalPorts, err := ms.awe.GetExposedPorts(image.ID)
+		if err != nil {
+			log.Printf("cannot get exposed ports: %s", err)
+			return machines, err
+		}
+		machine.InternalPorts = internalPorts
 
 		for _, v := range allOwns {
 			if v.Image == machine.Image {
@@ -67,12 +71,6 @@ func (ms *MachineService) GetAllMachines() ([]model.Machine, error) {
 			log.Println(v.Image + ":" + machine.Image)
 			if v.Image == machine.Image {
 				log.Println("Container Status: " + v.Status)
-				switch v.Status {
-				case "":
-					machine.Status = "not running"
-				default:
-					machine.Status = "not running"
-				}
 				machine.Status = v.Status
 				ports, err := ms.awe.GetOpenPorts(v)
 				if err != nil {

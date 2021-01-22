@@ -38,7 +38,7 @@ func (m *Machine) Validate() bool {
 	}
 	if m.InternalPorts == nil {
 		fmt.Println("Machine Validation Error - No internal ports provided")
-		validated = false
+		//validated = false
 	}
 	if m.Image == "" {
 		log.Println("Machine Validation Error - Image empty")

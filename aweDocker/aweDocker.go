@@ -260,6 +260,22 @@ func (a *AweDocker) GetOpenPorts(container types.Container) ([]string, error) {
 	return ports, nil
 }
 
+func (a *AweDocker) GetExposedPorts(imageID string) ([]string, error) {
+	var ports []string
+	imageInspect, _, err := a.cli.ImageInspectWithRaw(ctx,imageID)
+	if err != nil {
+		log.Printf("ka %s", err)
+		return nil, err
+	}
+	for k,portSet := range imageInspect.Config.ExposedPorts {
+		log.Printf("K: %s, V: %s", k,portSet)
+		ports = append(ports, k.Port())
+
+	}
+
+	return ports, nil
+}
+
 func (a *AweDocker) AddMachine(path string) error {
 	log.Println("Adding image from path " + path)
 	imageFile, err := os.Open(path)

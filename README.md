@@ -2,7 +2,7 @@
 AWE is a learning platform for advanced web exploitation technics. This project will include vulnerabilties on purpose - please don't run this on a machine which can be accessed by others - run this in a VM! 
 
 ## Architecture
-AWE is designed to run in a Linux VM. AWE runs a go application which controls the docker deamon. The single exploit targets are provided as docker images. AWE manages the single images.
+AWE is designed to run in a Linux VM. AWE runs a go application which controls the docker deamon. The single exploit targets are provided as docker images. AWE manages the single images and provide a easy to use API to control the platform.
 
 # Requirements
 - docker
@@ -20,32 +20,22 @@ $ ./awe
 
 ## Creating an AWE Docker Image:
 
-Creating a docker image for AWE is the same as any other docker image. The only difference is that are requires some labes to be set.
+Creating a docker image for AWE is the same as a normal other docker image. The only difference is that are requires some labels to be set.
 - awe=NAME
 - difficulty=DIFFICULTY
-- ports=PORT1[,PORT2]
 
 The awe label provides the name of the machine and gets displayed to the user.
 
 The difficulty label provides the expected difficult of the machine and gets displayed to the user.
 
-The ports label contains one port or a comma-separated list of ports. Those ports are used internally by the services running inside the container and get mapped to random ports accessible to the user.
+It's also important to set the exposed Ports, so that the platform knows, which ports to open.
 
 ### Example Build command when using a Dockerfile
 
-Add the labels when building the image
-
-```bash
- docker build -t hackme01 --label awe="Hackme 01" --label difficulty=easy --label ports=80 --label hint="Deserialization" .
- docker build -t hackme02 --label awe="Hackme 02" --label difficulty=easy --label ports=80,8080 .
- ```
-
-OR provide the labels inside the Dockerfile
-
 ```dockerfile
 FROM php:8.0-apache
+EXPOSE 80
 LABEL awe="Hackme 01"
-LABEL ports="80"
 LABEL difficulty="easy"
 LABEL hint="Deserialization"
 COPY ./www/hackme/ /var/www/hackme
@@ -76,5 +66,5 @@ MIT - see [LICENSE](./LICENSE) for further information
 - [x] Refactor Codebase (especially the database handling)
 - [ ] Add Frontend as git submodule
 - [x] Upload AWE-Docker Images
-- [ ] Prevent everyone from uploading an Image (otherwise the pc ca be taken over)
+- [x] Prevent everyone from uploading an Image (otherwise the pc ca be taken over)
 - [x] Additional flags for hints?
