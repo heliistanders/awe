@@ -84,3 +84,18 @@ func (s *OwnedMachineStore) GetAll() ([]model.OwnedMachine, error) {
 
 	return all, nil
 }
+
+func (s *OwnedMachineStore) IsOwned(name string) (bool, error) {
+	ownes, err := s.GetAll()
+	if err != nil {
+		return false, err
+	}
+
+	for _, o := range ownes {
+		if o.Image == name {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}

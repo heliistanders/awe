@@ -6,6 +6,7 @@ import (
 	"awe/model"
 	"database/sql"
 	"errors"
+	"github.com/docker/docker/api/types"
 	"log"
 	"strings"
 )
@@ -104,6 +105,19 @@ func (ms *MachineService) getMachineByName(name string) (model.Machine, error) {
 	}
 
 	return machine, errors.New("cannot find machine with given name")
+}
+
+func (ms *MachineService) IsMachineRunning(name string) bool {
+	machine, err := ms.getMachineByName(name)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+	if machine.Status == "not running" {
+		return false
+	}
+
+	return true
 }
 
 func (ms *MachineService) StartMachine(name string) error {
@@ -215,4 +229,31 @@ func (ms *MachineService) Solve(flag string) error {
 	}
 
 	return nil
+}
+
+func (ms *MachineService) AttachMachine(name string) (types.HijackedResponse, error){
+	if ms.IsOwned(name) && ms.IsMachineRunning(name) {
+		return ms.awe.AttachMachine(name)
+	} else {
+		return types.HijackedResponse{}, errors.New("not running or not owned")
+	}
+}
+
+func (ms *MachineService) IsOwned(name string) bool {
+	machine, err := ms.getMachineByName(name)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	isOwned, err := ms.machineStore.IsOwned(machine.Image)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+	if !isOwned {
+		return false
+	}
+
+	return true
 }

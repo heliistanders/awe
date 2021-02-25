@@ -6,8 +6,11 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
+	"io"
 	"log"
 	"math/rand"
+	"net/url"
 	"time"
 )
 
@@ -149,6 +152,52 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 		return ctx.SendString("OK")
 	})
 
+	// Upgrade WebSocket Request
+	app.Use("/terminals", func(c *fiber.Ctx) error {
+		return c.Next()
+	})
+
+	// Upgraded WebSocket request
+	app.Get("/terminals", websocket.New(func(conn *websocket.Conn) {
+		defer conn.Close()
+
+		encodedMachine := conn.Query("name", "")
+		log.Printf("Param: %s", encodedMachine)
+		machine, err := url.PathUnescape(encodedMachine)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		log.Printf("decodedParam: %s", machine)
+		if machine == "" {
+			return
+		}
+
+		hr, err := machineService.AttachMachine(machine)
+		if err != nil {
+			conn.WriteMessage(websocket.TextMessage,[]byte(err.Error()))
+			log.Print(err)
+			return
+		}
+		defer hr.Close()
+		defer func() {
+			hr.Conn.Write([]byte("exit\r"))
+		}()
+
+		log.Printf("Trying to access machine: %s", machine)
+
+
+		go func() {
+			wsWriterCopy(hr.Conn, conn)
+		}()
+		wsReaderCopy(conn, hr.Conn)
+
+	}))
+
+	app.Get("/ping", func(ctx *fiber.Ctx) error {
+		return ctx.Status(200).SendString("pong")
+	})
+
 	return app
 }
 
@@ -159,4 +208,32 @@ func GenerateRandomFlag(n int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+func wsWriterCopy(reader io.Reader, writer *websocket.Conn) {
+	buf := make([]byte, 8192)
+	for {
+		nr, err := reader.Read(buf)
+		if nr > 0 {
+			err := writer.WriteMessage(websocket.BinaryMessage, buf[0:nr])
+			if err != nil {
+				return
+			}
+		}
+		if err != nil {
+			return
+		}
+	}
+}
+
+func wsReaderCopy(reader *websocket.Conn, writer io.Writer) {
+	for {
+		messageType, p, err := reader.ReadMessage()
+		if err != nil {
+			return
+		}
+		if messageType == websocket.TextMessage {
+			writer.Write(p)
+		}
+	}
 }

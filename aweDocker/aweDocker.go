@@ -241,6 +241,24 @@ func (a *AweDocker) GetAllAweContainers() ([]types.Container, error) {
 	return containers, nil
 }
 
+func (a *AweDocker) GetAweContainerByName(name string) (types.Container, error) {
+	var aweContainer types.Container
+
+	allContainers, err := a.GetAllAweContainers()
+	if err != nil {
+		return aweContainer, err
+	}
+
+	for _, container := range allContainers {
+		log.Printf("ContainerImage: %s", container.Image)
+		if container.Image == name {
+			return container, nil
+		}
+	}
+
+	return aweContainer, errors.New(fmt.Sprintf("no container with found with name: %s", name))
+}
+
 func (a *AweDocker) GetOpenPorts(container types.Container) ([]string, error) {
 	var ports []string
 
@@ -290,4 +308,31 @@ func (a *AweDocker) AddMachine(path string) error {
 	}
 
 	return nil
+}
+
+func (a *AweDocker) AttachMachine(name string) (hr types.HijackedResponse, err error) {
+	container, err := a.GetAweContainerByName(name)
+	if err != nil {
+		return
+	}
+
+	ir, err := a.cli.ContainerExecCreate(ctx, container.ID, types.ExecConfig{
+		AttachStdin:  true,
+		AttachStdout: true,
+		AttachStderr: true,
+		WorkingDir:   "/",
+		Cmd:          []string{"/bin/sh"}, // sh should be available normally
+		Tty:          true,
+	})
+	if err != nil {
+		return
+	}
+
+	// run /bin/sh
+	hr, err = a.cli.ContainerExecAttach(ctx, ir.ID, types.ExecStartCheck{Detach: false, Tty: true})
+	if err != nil {
+		return hr, err
+	}
+
+	return hr, nil
 }
