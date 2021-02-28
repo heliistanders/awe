@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -37,7 +36,7 @@ func (m *Machine) Validate() bool {
 		validated = false
 	}
 	if m.InternalPorts == nil {
-		fmt.Println("Machine Validation Error - No internal ports provided")
+		log.Println("Machine Validation Error - No internal ports provided")
 		//validated = false
 	}
 	if m.Image == "" {

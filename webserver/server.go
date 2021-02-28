@@ -14,13 +14,13 @@ import (
 	"time"
 )
 
-func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
+func NewServer(awe *aweDocker.AweDocker, db *sql.DB, adminPassword string) *fiber.App {
 	app := fiber.New(fiber.Config{
 		UnescapePath: true,
 		ReadTimeout:  time.Second * 60,
 		WriteTimeout: time.Second * 60,
 		BodyLimit:    1024 * 1024 * 1024 * 2,
-		Concurrency: 1,
+		Concurrency: 5,
 	})
 
 	machineService := service.NewMachineService(awe, db)
@@ -139,12 +139,17 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 			log.Println(err)
 			return ctx.SendStatus(400)
 		}
-		if passwords[0] != "123" {
+		if passwords[0] != adminPassword {
 			log.Println("Wrong password")
 			log.Println(err)
 			return ctx.SendStatus(400)
 		}
 
+		if len(formFiles) > 1 || len(formFiles) == 0 {
+			return ctx.SendStatus(400)
+		}
+		fmt.Println("WTF")
+		fmt.Println(len(formFiles))
 		formFile := formFiles[0]
 
 		filePath := fmt.Sprintf("/tmp/%s.tar", "test")
@@ -152,7 +157,7 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 		err = ctx.SaveFile(formFile, filePath)
 		if err != nil {
 			log.Println(err)
-			ctx.SendStatus(500)
+			return ctx.SendStatus(500)
 		}
 		if err := machineService.AddMachine(filePath); err != nil {
 			return ctx.SendStatus(500)
@@ -205,6 +210,10 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 
 	app.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.Status(200).SendString("pong")
+	})
+
+	app.Get("/*", func(ctx *fiber.Ctx) error {
+		return ctx.SendFile("public/index.html", false)
 	})
 
 	return app

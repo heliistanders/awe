@@ -17,6 +17,15 @@ func main() {
 	// initialize logger -> show line number
 	log.SetFlags(log.Lshortfile | log.Ldate)
 
+	// setup adminPassword
+	adminPassword := webserver.GenerateRandomFlag(10)
+	envPW := os.Getenv("AWE_PASS")
+	if envPW != "" {
+		adminPassword = envPW
+	} else {
+		log.Printf("ADMIN PASSWORD = %s", adminPassword)
+	}
+
 	// check Website
 	if err := indexPageExists(); err != nil {
 		log.Fatal("index.html not found")
@@ -44,7 +53,7 @@ func main() {
 	defer db.Close()
 
 	// setup web server
-	app := webserver.NewServer(aweDockerInstance, db)
+	app := webserver.NewServer(aweDockerInstance, db, adminPassword)
 
 	// start WebServer
 	err = app.Listen(":5000")

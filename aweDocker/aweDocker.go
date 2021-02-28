@@ -63,7 +63,7 @@ func (a *AweDocker) StartMachineWithFlag(machine *model.Machine, flag string) er
 		// exposed ports
 		p, err := nat.NewPort("tcp", port)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 			return err
 		}
 		exposedPorts[p] = struct{}{}
@@ -136,7 +136,7 @@ func (a *AweDocker) StopMachine(machine *model.Machine) error {
 
 	for _, cont := range containerList {
 		if cont.Image == machine.Image {
-			timeout := time.Second * 30
+			timeout := time.Second * 10
 			err = a.cli.ContainerStop(ctx, cont.ID, &timeout)
 			if err != nil {
 				return err
