@@ -9,6 +9,10 @@ AWE orchestrated the docker daemon and provided an API to manage the learning pl
 AWE itself is written in GO. It uses SQLite3 to persist data.
 A frontend written with vue can be found here: https://github.com/heliistanders/awe-frontend
 
+## Goal
+
+Within each challenge a /flag.txt can be found. This flag gets automatically generated, everytime a challenge is started. The goal is to use an exploit to get the content of the file aka the flag. The flag can then be submitted. If the flag is correct, the challenge is marked as solved and you get access to the challenge via an web terminal.
+
 # Requirements
 - docker
 - a user which can access docker (root, or a user in the docker group)
