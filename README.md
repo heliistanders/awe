@@ -1,4 +1,4 @@
-# AWE - Advanced Web Exploitation - WIP!
+# AWE - Advanced Web Exploitation - 1.0!
 AWE is a learning platform for advanced web exploitation technics. 
 This project will is indented to serve vulnerabilities.
 Please don't run this on a machine which can be accessed by others - run this in a VM! 
@@ -48,7 +48,7 @@ It is important to set the exposed ports. The awe platform needs to know which p
 
 ### Example Challenges
 
-You can find example challenges in the examples folder. It shows how to build then. Start with the simple_example.
+You can find example challenges in the examples folder: https://github.com/heliistanders/awe/tree/main/examples . It shows how to build challenges. Start with the simple_example folder.
 
 If you are building the challenges on the same host, as awe is running, the challenges are automatically picked up by the platform.
 If you are bulding the challenges on another host, you can export them via tar file and add them via the admin page of the front-end.
