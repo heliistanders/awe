@@ -69,16 +69,25 @@ func NewServer(awe *aweDocker.AweDocker, db *sql.DB) *fiber.App {
 
 	app.Get("/restart/:name", func(ctx *fiber.Ctx) error {
 		name := ctx.Params("name")
-		machineService.RestartMachine(name)
-		return ctx.SendString("OK")
+		err := machineService.RestartMachine(name)
+		if err != nil {
+			log.Println(err)
+		}
+		machines, err := machineService.GetAllMachines()
+		if err != nil {
+			return ctx.SendStatus(500)
+		}
+		return ctx.JSON(machines)
 	})
 
+	// Not used
 	app.Get("/pause/:name", func(ctx *fiber.Ctx) error {
 		name := ctx.Params("name")
 		machineService.PauseMachine(name)
 		return ctx.Status(200).SendString("OK")
 	})
 
+	// Not used
 	app.Get("/resume/:name", func(ctx *fiber.Ctx) error {
 		name := ctx.Params("name")
 		machineService.ResumeMachine(name)

@@ -62,7 +62,7 @@ MIT - see [LICENSE](./LICENSE) for further information
 - [x] Serve static content
 - [x] Rework machine handling (restart, helper functions)
 - [ ] Implement better logging  
-- [ ] Web terminal via WebSocket into solved machines
+- [x] Web terminal via WebSocket into solved machines
 - [x] Refactor Codebase (especially the database handling)
 - [ ] Add Frontend as git submodule
 - [x] Upload AWE-Docker Images
